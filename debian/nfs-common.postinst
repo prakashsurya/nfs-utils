@@ -42,4 +42,10 @@ case "$1" in
     ;;
 esac
 
+cat /var/lib/nfs/etab || true
+exportfs -s || true
+showmount -e || true
 #DEBHELPER#
+showmount -e || true
+exportfs -s || true
+cat /var/lib/nfs/etab || true

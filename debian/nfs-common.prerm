@@ -3,7 +3,13 @@
 set -e
 set -x
 
+cat /var/lib/nfs/etab || true
+exportfs -s || true
+showmount -e || true
 #DEBHELPER#
+showmount -e || true
+exportfs -s || true
+cat /var/lib/nfs/etab || true
 
 if [ "$1" = remove ]
 then
