@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    install|upgrade)
+	#
+	# Older versions of the "nfs-kernel-server" package had "etab"
+	# file delivered as part of the package. Thus, when upgrading
+	# the package, the existing "etab" file would get replaced with
+	# a new/empty "etab" file from the new package.
+	#
+	# This file is dynamically modified during runtime, to contain
+	# the list of currently exported filesystems. Thus, when it's
+	# replaced on upgrade with an empty file, this results in all
+	# exports being unexported; i.e. mountd notices that the file is
+	# empty, interprets that to mean no filesystems should be
+	# currently exported, and then unexports all previously exported
+	# filesystems.
+	#
+	# This is problematic, since the act of unexporting the
+	# filesystems can result in client errors, if those exports are
+	# being actively used at the time of the upgrade/unexport.
+	#
+	# To avoid this issue, we're modifying the dpkg state, such that
+	# dpkg will no longer associate the "etab" file with the
+	# "nfs-kernel-server" package. This way, when the old package is
+	# removed, the "etab" file will not be automatically manipulated
+	# by dpkg. Additionally, we *must* do this in the "preinst"
+	# hook, so that we remove the association prior to the old
+	# package being removed.
+	#
+	sed -i '/\/var\/lib\/nfs\/etab/d' /var/lib/dpkg/info/nfs-kernel-server.list
+    ;;
+esac
